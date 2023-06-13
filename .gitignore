@@ -1,0 +1,5 @@
+*.o
+st
+slock
+dwm
+dmenu
