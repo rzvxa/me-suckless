@@ -1,0 +1,72 @@
+#!/bin/sh
+
+# Xfce only
+xfsettingsd &
+xfce4-power-manager &
+# ---- ----
+picom --no-fading-openclose &
+
+# kill previous instance
+script_name=${BASH_SOURCE[0]}
+for pid in $(pidof -x $script_name); do
+    if [ $pid != $$ ]; then
+        kill -9 $pid
+    fi 
+done
+
+# copyright https://github.com/cristoferfb/nerd-battery/blob/master/nbattery.sh
+BATTERY_DIR="/sys/class/power_supply/BAT0"
+
+nbattery() {
+    local _current_status=$(cat $BATTERY_DIR/status)
+	local _current_capacity=$(cat $BATTERY_DIR/capacity)
+
+    if [ "$_current_capacity" -le "10" ]; then
+        printf 
+    elif [ "$_current_capacity" -le "20" ]; then
+        printf 
+    elif [ "$_current_capacity" -le "30" ]; then
+        printf 
+    elif [ "$_current_capacity" -le "40" ]; then
+        printf  
+    elif [ "$_current_capacity" -le "50" ]; then
+        printf 
+    elif [ "$_current_capacity" -le "60" ]; then
+        printf 
+    elif [ "$_current_capacity" -le "70" ]; then
+        printf 
+    elif [ "$_current_capacity" -le "80" ]; then
+        printf 
+    elif [ "$_current_capacity" -le "90" ]; then
+        printf 
+    else
+        printf 
+    fi
+
+    [ "$_current_status" = "Charging" ] && printf   
+}
+
+battery() {
+  if grep -q 'Charging' "$BATTERY_DIR/status"; then
+    echo -n '+'
+  fi
+
+  tr -d '\n' <"$BATTERY_DIR/capacity"
+
+  echo '%'
+}
+
+locale() {
+  if hash xkblayout-state 2>/dev/null; then
+    xkblayout-state print "[%s]"
+  else
+    echo 'install xkblayout-state'
+  fi
+}
+
+while true; do
+  xprop -root -set WM_NAME "$(date '+%A, %B %-d, %-I:%M %p')  $(locale) $(battery) $(nbattery)"
+  sleep 5
+done &
+
+exec dwm
